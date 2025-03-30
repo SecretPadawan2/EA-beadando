@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>ChartJS Példa</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <h1>ChartJS Diagram</h1>
+  </header>
+  <nav>
+    <ul>
+      <li><a href="index.html">Kezdőlap</a></li>
+      <li><a href="tabla.html">Táblázat</a></li>
+      <li><a href="html5.html">HTML5</a></li>      
+      <li class="active"><a href="chartjs.html">ChartJS</a></li>      
+      <li><a href="ajax.html">AJAX</a></li>
+      <li><a href="oojs.html">OOJS</a></li>
+      <!-- többi menüpont -->
+    </ul>
+  </nav>
+  <div id="content">
+    <table id="numberTable" border="1">
+      <thead>
+        <tr>
+          <th>Oszlop 1</th>
+          <th>Oszlop 2</th>
+          <th>Oszlop 3</th>
+          <th>Oszlop 4</th>
+          <th>Oszlop 5</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td><td>2</td><td>3</td><td>4</td><td>5</td>
+        </tr>
+        <tr>
+          <td>5</td><td>4</td><td>3</td><td>2</td><td>1</td>
+        </tr>
+        <tr>
+          <td>2</td><td>3</td><td>4</td><td>5</td><td>6</td>
+        </tr>
+        <tr>
+          <td>6</td><td>5</td><td>4</td><td>3</td><td>2</td>
+        </tr>
+        <tr>
+          <td>3</td><td>4</td><td>5</td><td>6</td><td>7</td>
+        </tr>
+      </tbody>
+    </table>
+    <canvas id="lineChart" width="400" height="200"></canvas>
+  </div>
+  <footer>
+    <p>&copy;&nbsp; Készítette: Nagy Kristóf (S1LGWD), Péva Dániel (L40OXI)</p>
+  </footer>
+  <script>
+    let table = document.getElementById('numberTable');
+    let chart;
+    // Minden sorhoz eseménykezelő hozzáadása
+    for(let i = 0; i < table.tBodies[0].rows.length; i++) {
+      table.tBodies[0].rows[i].addEventListener('click', function() {
+        let rowData = [];
+        for(let j = 0; j < this.cells.length; j++) {
+          rowData.push(parseInt(this.cells[j].textContent));
+        }
+        renderChart(rowData);
+      });
+    }
+    
+    function renderChart(data) {
+      let ctx = document.getElementById('lineChart').getContext('2d');
+      if(chart) {
+        chart.destroy();
+      }
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.map((_, i) => "Oszlop " + (i+1)),
+          datasets: [{
+            label: 'Sor adatai',
+            data: data,
+            borderColor: 'rgba(75,192,192,1)',
+            fill: false
+          }]
+        },
+        options: {}
+      });
+    }
+  </script>
+</body>
+</html>

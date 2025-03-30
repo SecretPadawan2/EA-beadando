@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>HTML5 API Példák</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    #dragElement {
+      border-radius: 10px;
+      width: 100px;
+      height: 100px;
+      background: #f700ff;
+      cursor: move;
+    }
+    #dropArea {
+      width: 120px;
+      height: 120px;
+      background: #ccc;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>HTML5 API Példák</h1>
+  </header>
+  <nav>
+    <ul>
+      <li><a href="index.html">Kezdőlap</a></li>
+      <li><a href="tabla.html">Táblázat</a></li>
+      <li class="active"><a href="html5.html">HTML5</a></li>      
+      <li><a href="chartjs.html">ChartJS</a></li>
+      <li><a href="ajax.html">AJAX</a></li>
+      <li><a href="oojs.html">OOJS</a></li>
+      <!-- többi menüpont -->
+    </ul>
+  </nav>
+  <div id="content">
+    <!-- Web Storage -->
+    <section>
+      <h2>Web Storage</h2>
+      <button onclick="localStorage.setItem('kulcs', 'érték')">Mentés</button>
+      <button onclick="alert(localStorage.getItem('kulcs'))">Lekérés</button>
+    </section>
+
+    <!-- Web Worker -->
+    <section>
+      <h2>Web Worker</h2>
+      <button onclick="startWorker()">Indítás</button>
+      <p id="workerOutput"></p>
+      <script>
+        let worker;
+        function startWorker() {
+          if(typeof(Worker) !== "undefined") {
+            if(typeof(worker) == "undefined") {
+              worker = new Worker("worker.js");
+            }
+            worker.onmessage = function(event) {
+              document.getElementById("workerOutput").innerHTML = event.data;
+            };
+          } else {
+            document.getElementById("workerOutput").innerHTML = "A böngésző nem támogatja a Web Workereket.";
+          }
+        }
+      </script>
+    </section>
+
+    <!-- Server-Sent Events -->
+    <section>
+      <h2>Server-Sent Events</h2>
+      <div id="sseOutput">SSE üzenetek itt...</div>
+      <script>
+        if(typeof(EventSource) !== "undefined") {
+          let source = new EventSource("sse.php");
+          source.onmessage = function(event) {
+            document.getElementById("sseOutput").innerHTML += "<br>" + event.data;
+          };
+        } else {
+          document.getElementById("sseOutput").innerHTML = "SSE nem támogatott.";
+        }
+      </script>
+    </section>
+
+    <!-- Geolocation API -->
+    <section>
+      <h2>Geolocation API</h2>
+      <button onclick="getLocation()">Helymeghatározás</button>
+      <p id="location"></p>
+      <script>
+        function getLocation() {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+              document.getElementById("location").innerHTML =
+                "Szélesség: " + position.coords.latitude + 
+                ", Hosszúság: " + position.coords.longitude;
+            });
+          } else {
+            document.getElementById("location").innerHTML = "A böngésző nem támogatja a geolokációt.";
+          }
+        }
+      </script>
+    </section>
+
+    <!-- Drag and Drop API -->
+    <section>
+      <h2>Drag and Drop API</h2>
+      <div id="dragElement" draggable="true" ondragstart="drag(event)">Húzz engem!</div>
+      <div id="dropArea" ondrop="drop(event)" ondragover="allowDrop(event)">Ide dobhatod</div>
+      <script>
+        function allowDrop(ev) {
+          ev.preventDefault();
+        }
+        function drag(ev) {
+          ev.dataTransfer.setData("text", ev.target.id);
+        }
+        function drop(ev) {
+          ev.preventDefault();
+          var data = ev.dataTransfer.getData("text");
+          ev.target.appendChild(document.getElementById(data));
+        }
+      </script>
+    </section>
+
+    <!-- Canvas -->
+    <section>
+      <h2>Canvas</h2>
+      <canvas id="myCanvas" width="200" height="100" style="border:1px solid #000000;"></canvas>
+      <script>
+        let canvas = document.getElementById("myCanvas");
+        let ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#FF0000";
+        ctx.fillRect(20, 20, 150, 50);
+      </script>
+    </section>
+
+    <!-- SVG -->
+    <section>
+      <h2>SVG</h2>
+      <svg width="100" height="100">
+        <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow" />
+      </svg>
+    </section>
+  </div>
+  <footer>
+    <p>&copy;&nbsp; Készítette: Nagy Kristóf (S1LGWD), Péva Dániel (L40OXI)</p>
+  </footer>
+</body>
+</html>

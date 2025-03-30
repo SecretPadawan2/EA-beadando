@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Táblázat CRUD</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Táblázat CRUD műveletek</h1>
+  </header>
+  <nav>
+    <ul>
+      <li><a href="index.html">Kezdőlap</a></li>
+      <li class="active"><a href="tabla.html">Táblázat</a></li>
+      <li><a href="html5.html">HTML5</a></li>
+      <li><a href="chartjs.html">ChartJS</a></li>
+      <li><a href="ajax.html">AJAX</a></li>
+      <li><a href="oojs.html">OOJS</a></li>
+      <!-- többi menüpont -->
+    </ul>
+  </nav>
+  <div id="content">
+    <h2>Adatbeviteli űrlap</h2>
+    <form id="crudForm">
+      <input type="text" id="vnév" placeholder="Vezetéknév" required minlength="5" maxlength="30">
+      <input type="text" id="knév" placeholder="KersztNév" required minlength="5" maxlength="30">
+      <input type="number" id="kor" placeholder="Kor" required min="1" max="120">
+      <input type="email" id="email" placeholder="Email" required>      
+      
+      <button type="button" onclick="createRow()">Hozzáadás</button>
+    </form>
+    <input type="text" id="searchInput" placeholder="Keresés...">
+    <table id="dataTable" border="1">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)">Vezetéknév</th>
+          <th onclick="sortTable(1)">Keresztnév</th>
+          <th onclick="sortTable(2)">Kor</th>
+          <th onclick="sortTable(3)">Email</th>
+          <th>Műveletek</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- A sorok itt jelennek meg -->
+      </tbody>
+    </table>
+  </div>
+  <footer>
+    <p>&copy;&nbsp; Készítette: Nagy Kristóf (S1LGWD), Péva Dániel (L40OXI)</p>
+  </footer>
+  <script>
+    let data = [];
+
+    function createRow() {
+      // HTML5 validáció (required, minlength, maxlength) gondoskodik az alapokról.
+      const col1 = document.getElementById('vnév').value;
+      const col2 = document.getElementById('knév').value;
+      const col3 = document.getElementById('kor').value;
+      const col4 = document.getElementById('email').value;
+      
+      if(col1 && col2 && col3 && col4) {
+        data.push([col1, col2, col3, col4]);
+        renderTable();
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+      tbody.innerHTML = "";
+      data.forEach((row, index) => {
+        let tr = document.createElement('tr');
+        row.forEach(cell => {
+          let td = document.createElement('td');
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+        // Műveleti gombok: Update és Delete
+        let tdOps = document.createElement('td');
+        tdOps.innerHTML = '<button onclick="updateRow('+index+')">Szerkesztés</button> <button onclick="deleteRow('+index+')">Törlés</button>';
+        tr.appendChild(tdOps);
+        tbody.appendChild(tr);
+      });
+    }
+
+    function deleteRow(index) {
+      data.splice(index, 1);
+      renderTable();
+    }
+
+    function updateRow(index) {
+      // Egyszerű prompt alapú módosítási példa
+      let newData = data[index].map((cell, i) => prompt("Új érték az oszlop "+(i+1)+" számára:", cell));
+      if(newData.every(val => val && val.length <= 30)) {
+        data[index] = newData;
+        renderTable();
+      } else {
+        alert("Érvénytelen adat! Minden mező nem lehet üres és max 30 karakter.");
+      }
+    }
+
+    function sortTable(n) {
+      data.sort((a,b) => a[n].localeCompare(b[n]));
+      renderTable();
+    }
+
+    document.getElementById('searchInput').addEventListener('input', function(){
+      const filter = this.value.toLowerCase();
+      const tbody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+      tbody.innerHTML = "";
+      data.forEach((row, index) => {
+        if(row.some(cell => cell.toLowerCase().includes(filter))) {
+          let tr = document.createElement('tr');
+          row.forEach(cell => {
+            let td = document.createElement('td');
+            td.textContent = cell;
+            tr.appendChild(td);
+          });
+          let tdOps = document.createElement('td');
+          tdOps.innerHTML = '<button onclick="updateRow('+index+')">Szerkesztés</button> <button onclick="deleteRow('+index+')">Törlés</button>';
+          tr.appendChild(tdOps);
+          tbody.appendChild(tr);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

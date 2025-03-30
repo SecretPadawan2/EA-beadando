@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>AJAX Alkalmazás</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>AJAX CRUD alkalmazás</h1>
+  </header>
+  <nav>
+    <ul>
+      <li><a href="index.html">Kezdőlap</a></li>
+      <li><a href="tabla.html">Táblázat</a></li>
+      <li><a href="html5.html">HTML5</a></li>
+      <li><a href="chartjs.html">ChartJS</a></li>      
+      <li class="active"><a href="ajax.html">AJAX</a></li>      
+      <li><a href="oojs.html">OOJS</a></li>
+      <!-- többi menüpont -->
+    </ul>
+  </nav>
+  <div id="content">
+    <h2>Adatok listázása</h2>
+    <div id="readData"></div>
+    <div id="stats"></div>
+    
+    <h2>Create / Update</h2>
+    <form id="ajaxForm">
+      <input type="hidden" id="recordId">
+      <input type="text" id="dataInput" placeholder="Adat" required maxlength="30">
+      <button type="button" onclick="createRecord()">Create</button>
+      <button type="button" onclick="updateRecord()">Update</button>
+      <button type="button" onclick="getDataForId()">getDataForId</button>
+    </form>
+    
+    <h2>Delete</h2>
+    <input type="text" id="deleteId" placeholder="ID">
+    <button type="button" onclick="deleteRecord()">Delete</button>
+    
+    <div id="feedback"></div>
+  </div>
+  <footer>
+    <p>&copy;&nbsp; Készítette: Nagy Kristóf (S1LGWD), Péva Dániel (L40OXI)</p>
+  </footer>
+  <script src="ajax.js"></script>
+</body>
+</html>
