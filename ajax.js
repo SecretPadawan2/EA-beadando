@@ -1,101 +1,207 @@
+API_URL = 'http://gamf.nhely.hu/ajax2/';
+CODE = 'l40oxifce512';
+
 function displayFeedback(message) {
-    document.getElementById('feedback').innerText = message;
+  document.getElementById('feedback').innerText = message;
+}
+
+function createRecord() {
+  let input = document.getElementById('dataInput').value.trim();
+  let parts = input.split(',');
+
+  if (parts.length !== 3) {
+    displayFeedback("Adj meg 3 adatot vesszővel elválasztva: név, magasság, súly!");
+    return;
   }
-  
-  function createRecord() {
-    let data = document.getElementById('dataInput').value.trim();
-    if(data === "" || data.length > 30) {
-      displayFeedback("Érvénytelen adat!");
-      return;
-    }
-    fetch('/api/create', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({data: data})
+
+  let name = parts[0].trim();
+  let height = parts[1].trim();
+  let weight = parts[2].trim();
+
+  if (name === "" || height === "" || weight === "") {
+    displayFeedback("Nem lehet üres mező!");
+    return;
+  }
+
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      op: 'create',
+      name: name,
+      height: height,
+      weight: weight,
+      code: CODE
     })
-    .then(response => response.json())
-    .then(result => {
-      displayFeedback("Create sikeres: " + JSON.stringify(result));
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result === 1) {
+      displayFeedback("Sikeres létrehozás!");
       readRecords();
+    } else {
+      displayFeedback("Nem sikerült a létrehozás.");
+    }
+  })
+  .catch(error => displayFeedback("Hiba: " + error));
+}
+
+
+function readRecords() {
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      op: 'read',
+      code: CODE
     })
-    .catch(error => displayFeedback("Hiba: " + error));
-  }
-  
-  function readRecords() {
-    fetch('/api/read')
-    .then(response => response.json())
-    .then(records => {
-      let container = document.getElementById('readData');
-      container.innerHTML = "";
-      let heights = [];
-      records.forEach(rec => {
-        let p = document.createElement('p');
-        p.innerText = "ID: " + rec.id + ", Data: " + rec.data + ", Height: " + rec.height;
-        container.appendChild(p);
-        heights.push(rec.height);
-      });
-      if(heights.length > 0) {
-        let sum = heights.reduce((a,b)=>a+b,0);
-        let avg = sum / heights.length;
-        let max = Math.max(...heights);
-        document.getElementById('stats').innerText = "Összeg: " + sum + ", Átlag: " + avg + ", Legnagyobb: " + max;
-      }
-    })
-    .catch(error => displayFeedback("Hiba: " + error));
-  }
-  
-  function updateRecord() {
-    let id = document.getElementById('recordId').value.trim();
-    let data = document.getElementById('dataInput').value.trim();
-    if(data === "" || data.length > 30 || id === "") {
-      displayFeedback("Érvénytelen adat vagy hiányzó ID!");
+  })
+  .then(response => response.json())
+  .then(result => {
+    console.log("Lekérdezett adatok:", result);
+
+    let container = document.getElementById('readData');
+    container.innerHTML = "";
+    let heights = [];
+
+    let records = result.list || result;
+    if (!Array.isArray(records)) {
+      displayFeedback("A válasz nem tartalmazott rekordokat.");
       return;
     }
-    fetch('/api/update/' + id, {
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({data: data})
+
+    records.forEach(rec => {
+      let p = document.createElement('p');
+      p.innerText = `ID: ${rec.id}, Név: ${rec.name}, Magasság: ${rec.height}, Súly: ${rec.weight}`;
+      container.appendChild(p);
+
+      let h = parseFloat(rec.height);
+      if (!isNaN(h)) heights.push(h);
+    });
+
+    if (heights.length > 0) {
+      let sum = heights.reduce((a, b) => a + b, 0);
+      let avg = sum / heights.length;
+      let max = Math.max(...heights);
+      document.getElementById('stats').innerText =
+        `Összeg: ${sum}, Átlag: ${avg.toFixed(2)}, Legnagyobb: ${max}`;
+    } else {
+      document.getElementById('stats').innerText = "Nincs magasság adat.";
+    }
+  })
+  .catch(error => {
+    console.error("Hiba történt a lekérdezésnél:", error);
+    displayFeedback("Hiba: " + error);
+  });
+}
+
+function updateRecord() {
+  let id = document.getElementById('recordId').value.trim();
+  let input = document.getElementById('dataInput').value.trim();
+  let parts = input.split(',');
+
+  if (id === "" || parts.length !== 3) {
+    displayFeedback("Adj meg egy ID-t és három adatot vesszővel elválasztva: név, magasság, súly!");
+    return;
+  }
+
+  let name = parts[0].trim();
+  let height = parts[1].trim();
+  let weight = parts[2].trim();
+
+  if (name === "" || height === "" || weight === "") {
+    displayFeedback("Nem lehet üres mező!");
+    return;
+  }
+
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      op: 'update',
+      id: id,
+      name: name,
+      height: height,
+      weight: weight,
+      code: CODE
     })
-    .then(response => response.json())
-    .then(result => {
-      displayFeedback("Update sikeres: " + JSON.stringify(result));
+  })
+  .then(response => response.json())
+  .then(result => {
+    console.log("Update válasz:", result);
+    if (result === 1) {
+      displayFeedback("Sikeres módosítás!");
       readRecords();
-    })
-    .catch(error => displayFeedback("Hiba: " + error));
-  }
-  
-  function deleteRecord() {
-    let id = document.getElementById('deleteId').value.trim();
-    if(id === "") {
-      displayFeedback("Hiányzó ID!");
-      return;
+    } else {
+      displayFeedback("Nem sikerült módosítani. Ellenőrizd az ID-t és a saját kódot!");
     }
-    fetch('/api/delete/' + id, {
-      method: 'DELETE'
+  })
+  .catch(error => displayFeedback("Hiba: " + error));
+}
+
+
+function deleteRecord() {
+  let id = document.getElementById('recordId').value.trim();
+  if (id === "") {
+    displayFeedback("Hiányzó ID!");
+    return;
+  }
+
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      op: 'delete',
+      id: id,
+      code: CODE
     })
-    .then(response => response.json())
-    .then(result => {
-      displayFeedback("Delete sikeres: " + JSON.stringify(result));
+  })
+  .then(response => response.json())
+  .then(result => {
+    console.log("Törlés válasz:", result);
+    if (result === 1) {
+      displayFeedback("Sikeres törlés!");
       readRecords();
-    })
-    .catch(error => displayFeedback("Hiba: " + error));
-  }
-  
-  function getDataForId() {
-    let id = document.getElementById('recordId').value.trim();
-    if(id === "") {
-      displayFeedback("Adjon meg egy ID-t!");
-      return;
+    } else {
+      displayFeedback("Nem sikerült törölni. Rossz ID vagy CODE?");
     }
-    fetch('/api/read/' + id)
-    .then(response => response.json())
-    .then(record => {
-      document.getElementById('dataInput').value = record.data;
+  })
+  .catch(error => displayFeedback("Hiba: " + error));
+}
+
+function getDataForId() {
+  let id = document.getElementById('recordId').value.trim();
+  if (id === "") {
+    displayFeedback("Adjon meg egy ID-t!");
+    return;
+  }
+
+  // Készítjük el a kérést
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      op: 'read',  // művelet
+      id: id,      // az ID, amit beírtál
+      code: CODE   // a saját kódod
+    })
+  })
+  .then(response => response.json())
+  .then(record => {
+    console.log("Betöltött rekord:", record);  
+    if (record && record.list && record.list.length > 0) {
+      let loadedRecord = record.list[0];  // Feltételezve, hogy van találat
+      document.getElementById('dataInput').value = loadedRecord.name + ',' + loadedRecord.height + ',' + loadedRecord.weight;
       displayFeedback("Adat betöltve.");
-    })
-    .catch(error => displayFeedback("Hiba: " + error));
-  }
-  
-  // Oldal betöltésekor frissítjük az adatokat
-  readRecords();
-  
+    } else {
+      displayFeedback("Nem található rekord ezzel az ID-val.");
+    }
+  })
+  .catch(error => {
+    console.error("Hiba:", error);  // A hiba pontos okának megjelenítése
+    displayFeedback("Hiba történt a betöltés során.");
+  });
+}
+
+
+readRecords();
