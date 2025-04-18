@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>Egyoldalas React Alkalmazás</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <style>
+        body {
+            background-color: #f4f4f8;
+            font-family: "Segoe UI", sans-serif;
+            color: #333;
+        }
+
+        nav {
+            background-color: #444;
+            display: flex;
+            gap: 2rem;
+            padding: 0.5rem 0;
+            font-size: larger;
+            justify-content: center;
+            border-radius: 25px;
+}
+        nav ul {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            margin: 0; 
+        }
+        nav li {
+            list-style: none;
+            border-radius: 10px;
+}
+nav a {
+  color: #eee;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+}
+
+nav a:hover {
+  background-color: #666;
+}
+
+nav ul li.active a,
+nav ul li a:hover {
+  background: #3170E9;
+  border-radius: 10px;
+}
+
+nav a.active {
+  background-color: #1e90ff;
+  color: white;
+}
+        
+        .container { 
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  margin: 2rem auto;
+  max-width: 900px;
+}
+footer {
+  display: grid;
+  grid-template-columns: 15% 85%;
+  clear: both;
+  border-radius: 15px;
+  background-color: #124096;
+  color: white;
+  font-size: larger;
+  max-width: 800px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  margin: 2rem auto;
+}
+
+.bal{
+  width: 65px;
+  height: auto;
+  padding: 15px 0px 20px -30px;
+  margin-left: 10px;
+  animation: spin 7s linear infinite;
+}
+.jobb{
+  padding-top: 5px;
+  width: 735px;
+}
+        .color-display { padding: 20px; margin-bottom: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/javascript">
+        function Menu() {
+            return (
+                React.createElement('nav', null,
+                    React.createElement('ul', null,
+                        React.createElement('li', null,
+                            React.createElement('a', { href: '#szamlalo' }, 'Számláló')
+                        ),
+                        React.createElement('li', null,
+                            React.createElement('a', { href: '#szinvalaszto' }, 'Színválasztó')
+                        )
+                    )
+                )
+            );
+        }
+
+        function SzamlaloApp() {
+            const [szamlalo, setSzamlalo] = React.useState(0);
+
+            const novelSzamlalo = () => {
+                setSzamlalo(szamlalo + 1);
+            };
+
+            const csokkentSzamlalo = () => {
+                setSzamlalo(szamlalo - 1);
+            };
+
+            const randomSzamGenerator = () => {
+                const min = -1000;
+                const max = 5000;
+                const randomSzam = Math.floor(Math.random() * (max - min + 1)) + min;
+                setSzamlalo(randomSzam);
+            };
+
+            return (
+                React.createElement('div', null,
+                    React.createElement('h2', null, 'Számláló Alkalmazás'),
+                    React.createElement('p', null, 'Aktuális érték: ', React.createElement('strong', null, szamlalo)),
+                    React.createElement('button', { onClick: novelSzamlalo }, 'Növel'),
+                    React.createElement('button', { onClick: csokkentSzamlalo }, 'Csökkent'),
+                    React.createElement('button', { onClick: randomSzamGenerator }, 'Random Szám')
+                )
+            );
+        }
+
+        function SzinvalasztoApp() {
+            const [szin, setSzin] = React.useState('lightblue');
+
+            const valasztottSzinMegjelenitese = (esemeny) => {
+                setSzin(esemeny.target.value);
+            };
+
+            const randomSzinGenerator = () => {
+                const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+                setSzin(randomColor);
+            };
+
+            const szinKodMasolasa = () => {
+                navigator.clipboard.writeText(szin);
+                alert(`A színkód (${szin}) a vágólapra másolva!`);
+            };
+
+            return (
+                React.createElement('div', null,
+                    React.createElement('h2', null, 'Színválasztó Alkalmazás'),
+                    React.createElement('div', { className: 'color-display', style: { backgroundColor: szin } },
+                        React.createElement('p', null, 'A kiválasztott szín: ', React.createElement('strong', null, szin))
+                    ),
+                    React.createElement('label', { htmlFor: 'szinInput' }, 'Válassz egy színt: '),
+                    React.createElement('input', { type: 'color', id: 'szinInput', value: szin, onChange: valasztottSzinMegjelenitese }),
+                    React.createElement('button', { onClick: randomSzinGenerator }, 'Random Szín'),
+                    React.createElement('button', { onClick: szinKodMasolasa }, 'Másol')
+                )
+            );
+        }
+
+        function App() {
+            const [aktivOldal, setAktivOldal] = React.useState('szamlalo');
+
+            React.useEffect(() => {
+                const hashChangeListener = () => {
+                    const hash = window.location.hash.substring(1);
+                    setAktivOldal(hash || 'szamlalo');
+                };
+
+                window.addEventListener('hashchange', hashChangeListener);
+                hashChangeListener(); // Initial call to set active page on load
+
+                return () => {
+                    window.removeEventListener('hashchange', hashChangeListener);
+                };
+            }, []);
+
+            let megjelenitettOldal;
+            if (aktivOldal === 'szamlalo') {
+                megjelenitettOldal = React.createElement(SzamlaloApp);
+            } else if (aktivOldal === 'szinvalaszto') {
+                megjelenitettOldal = React.createElement(SzinvalasztoApp);
+            } else {
+                megjelenitettOldal = React.createElement(SzamlaloApp); // Alapértelmezett
+            }
+
+            return (
+                React.createElement('div', { className: 'container' },
+                    React.createElement(Menu),
+                    megjelenitettOldal
+                )
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
+    </script>
+    <footer>
+        <div class="bal"><img class="bal" src="GAMF-white.png" alt="white"></a></div>
+        <div class="jobb"><p>&copy;&nbsp;Készítette: Nagy Kristóf (S1LGWD), Péva Dániel (L40OXI)</p></div>
+      </footer>
+</body>
+</html>
