@@ -11,18 +11,22 @@ body {
   }
   
   nav ul {
+    border-radius: 10px;
     list-style: none;
-    margin: 0;
+    margin-left: 50px;
+    margin-right: 50px;
     padding: 0;
-    background: #333;
+    background: #124096;
     overflow: hidden;
   }
   
   nav ul li {
+    border-radius: 10px;
     float: left;
   }
   
   nav ul li a {
+    font-size: larger;
     display: block;
     color: white;
     text-decoration: none;
@@ -31,7 +35,8 @@ body {
   
   nav ul li.active a,
   nav ul li a:hover {
-    background: #111;
+    background: #3170E9;
+    border-radius: 10px;
   }
   
   aside {
@@ -48,6 +53,32 @@ body {
   }
   
   footer {
+    display: grid;
+    grid-template-columns: 10% 90%;
     clear: both;
+    border-radius: 15px;
+    background-color: #124096;
+    margin: 0px 300px 0px 300px;
+    color: white;
+    font-size: large;
   }
   
+  .bal{
+    width: 65px;
+    height: auto;
+    padding: 10px 0px 20px -30px;
+    margin-left: 10px;
+    animation: spin 7s linear infinite;
+  }
+  .jobb{
+    padding-top: 10px;
+  }
+
+  @keyframes spin {
+    from {
+        transform: rotateY(0deg);
+    }
+    to {
+        transform: rotateY(360deg);
+    }
+}
