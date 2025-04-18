@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-  <meta charset="UTF-8">
-  <title>Táblázat CRUD</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Táblázat – Webprogramozás 1</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header>
-    <h1>Táblázat CRUD műveletek</h1>
+    <h2>CRUD Táblázat</h2>
   </header>
+
   <nav>
     <ul>
       <li><a href="index.html">Kezdőlap</a></li>
@@ -20,110 +22,156 @@
       <!-- többi menüpont -->
     </ul>
   </nav>
-  <div id="content">
-    <h2>Adatbeviteli űrlap</h2>
-    <form id="crudForm">
-      <input type="text" id="vnév" placeholder="Vezetéknév" required minlength="5" maxlength="30">
-      <input type="text" id="knév" placeholder="KersztNév" required minlength="5" maxlength="30">
-      <input type="number" id="kor" placeholder="Kor" required min="1" max="120">
-      <input type="email" id="email" placeholder="Email" required>      
-      
-      <button type="button" onclick="createRow()">Hozzáadás</button>
-    </form>
-    <input type="text" id="searchInput" placeholder="Keresés...">
-    <table id="dataTable" border="1">
-      <thead>
-        <tr>
-          <th onclick="sortTable(0)">Vezetéknév</th>
-          <th onclick="sortTable(1)">Keresztnév</th>
-          <th onclick="sortTable(2)">Kor</th>
-          <th onclick="sortTable(3)">Email</th>
-          <th>Műveletek</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- A sorok itt jelennek meg -->
-      </tbody>
-    </table>
-  </div>
+
+  <main>
+    <aside>
+    </aside>
+
+    <div class="content">
+
+      <form id="dataForm">
+        <div class="form-control">
+          <label>Név: <input type="text" id="name" required minlength="5" maxlength="20" /></label>
+        </div>
+        <div class="form-control">
+          <label>Kor: <br><input type="number" id="age" required min="12" max="100" /></label>
+        </div>
+        <div class="form-control">
+          <label>Város: <input type="text" id="city" required minlength="3" maxlength="30" /></label>
+        </div>
+        <div class="form-control">
+          <label>Hobbi: <input type="text" id="hobby" required minlength="5" maxlength="30" /></label>
+        </div>
+        <button type="submit">Hozzáadás / Mentés</button>
+      </form>
+
+      <input type="text" id="searchInput" placeholder="Keresés..." />
+
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th class="sortable" data-key="name">Név</th>
+            <th class="sortable" data-key="age">Kor</th>
+            <th class="sortable" data-key="city">Város</th>
+            <th class="sortable" data-key="hobby">Hobbi</th>
+            <th>Művelet</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </main>
+
   <footer>
     <div class="bal"><a href="index.html"><img class="bal" src="GAMF-white.png" alt="white"></a></div>
     <div class="jobb"><p>&copy;&nbsp;Készítette: Nagy Kristóf (S1LGWD), Péva Dániel (L40OXI)</p></div>
   </footer>
-  <script>
-    let data = [];
 
-    function createRow() {
-      // HTML5 validáció (required, minlength, maxlength) gondoskodik az alapokról.
-      const col1 = document.getElementById('vnév').value;
-      const col2 = document.getElementById('knév').value;
-      const col3 = document.getElementById('kor').value;
-      const col4 = document.getElementById('email').value;
-      
-      if(col1 && col2 && col3 && col4) {
-        data.push([col1, col2, col3, col4]);
-        renderTable();
+  <script>
+    const form = document.getElementById('dataForm');
+    const tableBody = document.querySelector('#dataTable tbody');
+    const searchInput = document.getElementById('searchInput');
+    const headers = document.querySelectorAll('.sortable');
+
+    let data = [
+    { name: "Kiss Anna", age: 22, city: "Budapest", hobby: "Futás" },
+    { name: "Nagy Péter", age: 30, city: "Szeged", hobby: "Gitározás" },
+    { name: "Szabó Lilla", age: 25, city: "Debrecen", hobby: "Olvasás" },
+    { name: "Tóth Ádám", age: 28, city: "Pécs", hobby: "Kertészkedés" }
+  ];
+    let editingIndex = -1;
+    let sortKey = '';
+    let sortAsc = true;
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const age = parseInt(document.getElementById('age').value);
+      const city = document.getElementById('city').value.trim();
+      const hobby = document.getElementById('hobby').value.trim();
+
+      if (!name || !city || !hobby || !age || isNaN(age)) {
+        alert('Minden mezőt helyesen ki kell tölteni!');
+        return;
       }
-    }
+
+      const entry = { name, age, city, hobby };
+
+      if (editingIndex === -1) {
+        data.push(entry);
+      } else {
+        data[editingIndex] = entry;
+        editingIndex = -1;
+      }
+
+      form.reset();
+      renderTable();
+    });
 
     function renderTable() {
-      const tbody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
-      tbody.innerHTML = "";
-      data.forEach((row, index) => {
-        let tr = document.createElement('tr');
-        row.forEach(cell => {
-          let td = document.createElement('td');
-          td.textContent = cell;
-          tr.appendChild(td);
+      const filter = searchInput.value.toLowerCase();
+      let filtered = data.filter(row =>
+        Object.values(row).some(val => String(val).toLowerCase().includes(filter))
+      );
+
+      if (sortKey) {
+        filtered.sort((a, b) => {
+          if (typeof a[sortKey] === 'string') {
+            return sortAsc ? a[sortKey].localeCompare(b[sortKey]) : b[sortKey].localeCompare(a[sortKey]);
+          } else {
+            return sortAsc ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey];
+          }
         });
-        // Műveleti gombok: Update és Delete
-        let tdOps = document.createElement('td');
-        tdOps.innerHTML = '<button onclick="updateRow('+index+')">Szerkesztés</button> <button onclick="deleteRow('+index+')">Törlés</button>';
-        tr.appendChild(tdOps);
-        tbody.appendChild(tr);
+      }
+
+      tableBody.innerHTML = '';
+      filtered.forEach((row, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.name}</td>
+          <td>${row.age}</td>
+          <td>${row.city}</td>
+          <td>${row.hobby}</td>
+          <td>
+            <button onclick="editRow(${index})">Szerkeszt</button>
+            <button onclick="deleteRow(${index})">Töröl</button>
+          </td>
+        `;
+        tableBody.appendChild(tr);
       });
+    }
+
+    function editRow(index) {
+      const row = data[index];
+      document.getElementById('name').value = row.name;
+      document.getElementById('age').value = row.age;
+      document.getElementById('city').value = row.city;
+      document.getElementById('hobby').value = row.hobby;
+      editingIndex = index;
     }
 
     function deleteRow(index) {
-      data.splice(index, 1);
-      renderTable();
-    }
-
-    function updateRow(index) {
-      // Egyszerű prompt alapú módosítási példa
-      let newData = data[index].map((cell, i) => prompt("Új érték az oszlop "+(i+1)+" számára:", cell));
-      if(newData.every(val => val && val.length <= 30)) {
-        data[index] = newData;
+      if (confirm('Biztosan törölni szeretnéd?')) {
+        data.splice(index, 1);
         renderTable();
-      } else {
-        alert("Érvénytelen adat! Minden mező nem lehet üres és max 30 karakter.");
       }
     }
 
-    function sortTable(n) {
-      data.sort((a,b) => a[n].localeCompare(b[n]));
-      renderTable();
-    }
-
-    document.getElementById('searchInput').addEventListener('input', function(){
-      const filter = this.value.toLowerCase();
-      const tbody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
-      tbody.innerHTML = "";
-      data.forEach((row, index) => {
-        if(row.some(cell => cell.toLowerCase().includes(filter))) {
-          let tr = document.createElement('tr');
-          row.forEach(cell => {
-            let td = document.createElement('td');
-            td.textContent = cell;
-            tr.appendChild(td);
-          });
-          let tdOps = document.createElement('td');
-          tdOps.innerHTML = '<button onclick="updateRow('+index+')">Szerkesztés</button> <button onclick="deleteRow('+index+')">Törlés</button>';
-          tr.appendChild(tdOps);
-          tbody.appendChild(tr);
+    headers.forEach(header => {
+      header.addEventListener('click', () => {
+        const key = header.getAttribute('data-key');
+        if (sortKey === key) {
+          sortAsc = !sortAsc;
+        } else {
+          sortKey = key;
+          sortAsc = true;
         }
+        renderTable();
       });
     });
+
+    searchInput.addEventListener('input', renderTable);
+    renderTable();
   </script>
 </body>
 </html>
