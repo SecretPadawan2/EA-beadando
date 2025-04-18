@@ -176,32 +176,41 @@ function getDataForId() {
     return;
   }
 
-  // Készítjük el a kérést
   fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
-      op: 'read',  // művelet
-      id: id,      // az ID, amit beírtál
-      code: CODE   // a saját kódod
+      op: 'read',
+      code: CODE
     })
   })
   .then(response => response.json())
-  .then(record => {
-    console.log("Betöltött rekord:", record);  
-    if (record && record.list && record.list.length > 0) {
-      let loadedRecord = record.list[0];  // Feltételezve, hogy van találat
-      document.getElementById('dataInput').value = loadedRecord.name + ',' + loadedRecord.height + ',' + loadedRecord.weight;
+  .then(result => {
+    const records = result.list || result;
+
+    console.log("Kapott rekordok:", records);
+    console.log("Keresett ID:", id);
+
+    // DEBUG: Típusellenőrzés
+    records.forEach(rec => {
+      console.log(`record.id: ${rec.id} (${typeof rec.id}), keresett: ${id} (${typeof id})`);
+    });
+
+    // ID összehasonlítás
+    const found = records.find(rec => String(rec.id) === id);
+
+    if (found) {
+      console.log("MEGTALÁLT:", found);
+      document.getElementById('dataInput').value = `${found.name},${found.height},${found.weight}`;
       displayFeedback("Adat betöltve.");
     } else {
       displayFeedback("Nem található rekord ezzel az ID-val.");
     }
   })
   .catch(error => {
-    console.error("Hiba:", error);  // A hiba pontos okának megjelenítése
+    console.error("Hiba:", error);
     displayFeedback("Hiba történt a betöltés során.");
   });
 }
-
 
 readRecords();
