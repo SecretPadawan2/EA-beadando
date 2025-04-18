@@ -84,21 +84,25 @@
     <!-- Geolocation API -->
     <section>
       <h2>Geolocation API</h2>
-      <button onclick="getLocation()">Helymeghatározás</button>
-      <p id="location"></p>
-      <script>
-        function getLocation() {
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-              document.getElementById("location").innerHTML =
-                "Szélesség: " + position.coords.latitude + 
-                ", Hosszúság: " + position.coords.longitude;
-            });
-          } else {
-            document.getElementById("location").innerHTML = "A böngésző nem támogatja a geolokációt.";
-          }
-        }
-      </script>
+      <p>Kattintson a gombra hogy megkapja a koordinátáit.</p>
+	<button onclick="getLocation()">Koordináta Gomb</button>
+	<p id="demo"></p>
+	<script>	
+		var x = document.getElementById("demo");
+		function getLocation()  {
+			if (navigator.geolocation)
+				navigator.geolocation.getCurrentPosition(showPosition);
+			else 
+				x.innerHTML = "Geolocation nem támogatja ezt a böngészőt!";
+		}
+		function showPosition(position)  {
+			x.innerHTML = "Szélesség: " + position.coords.latitude + "<br>Hosszúság: " + position.coords.longitude;	
+			var newContent = '<iframe src = "https://maps.google.com/maps?q=' + position.coords.latitude + ',' + position.coords.longitude + '&hl=es;z=14&amp;output=embed" width="600" height="450"></iframe>';
+			var contentHolder = document.getElementById('content-holder');
+			contentHolder.innerHTML = newContent;
+		}
+	</script>
+	<p id="content-holder">Google térkép: GPS koordinátákra vár...</p>
     </section>
 
     <!-- Drag and Drop API -->
