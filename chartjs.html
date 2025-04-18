@@ -21,74 +21,80 @@
       <!-- többi menüpont -->
     </ul>
   </nav>
-  <div id="content">
-    <table id="numberTable" border="1">
-      <thead>
-        <tr>
-          <th>Oszlop 1</th>
-          <th>Oszlop 2</th>
-          <th>Oszlop 3</th>
-          <th>Oszlop 4</th>
-          <th>Oszlop 5</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>1</td><td>2</td><td>3</td><td>4</td><td>5</td>
-        </tr>
-        <tr>
-          <td>5</td><td>4</td><td>3</td><td>2</td><td>1</td>
-        </tr>
-        <tr>
-          <td>2</td><td>3</td><td>4</td><td>5</td><td>6</td>
-        </tr>
-        <tr>
-          <td>6</td><td>5</td><td>4</td><td>3</td><td>2</td>
-        </tr>
-        <tr>
-          <td>3</td><td>4</td><td>5</td><td>6</td><td>7</td>
-        </tr>
-      </tbody>
-    </table>
-    <canvas id="lineChart" width="400" height="200"></canvas>
-  </div>
+  <h1>Táblázat → Vonaldiagram</h1>
+  <h2>(Kérem kattintson valamelyik sorra a vonaldiagram megjelenítéséhez)</h2>
+
+  <!-- 5×5-ös táblázat -->
+  <table id="dataTable">
+    <thead>
+      <tr>
+        <th>1. oszlop</th><th>2. oszlop</th><th>3. oszlop</th><th>4. oszlop</th><th>5. oszlop</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- JavaScript tölti fel véletlenszámokkal -->
+    </tbody>
+  </table>
+
+  <!-- Itt jelenik majd meg a Chart.js vonaldiagram -->
+  <canvas id="myChart"></canvas>
+
+  <!-- Chart.js CDN import -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script> <!-- :contentReference[oaicite:3]{index=3} -->
+  <script>
+    // 1) Véletlenszámok generálása és táblázat feltöltése
+    const tbody = document.querySelector('#dataTable tbody');
+    for (let i = 0; i < 5; i++) {
+      const tr = document.createElement('tr');
+      for (let j = 0; j < 5; j++) {
+        const td = document.createElement('td');
+        td.textContent = Math.floor(Math.random() * 100) + 1;
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+
+    // 2) Chart.js inicializálása üres adatokkal :contentReference[oaicite:4]{index=4}
+    const ctx = document.getElementById('myChart');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['1. oszlop', '2. oszlop', '3. oszlop', '4. oszlop', '5. oszlop'],
+        datasets: [{
+          label: 'Kiválasztott sor adatai',
+          data: [],
+          fill: false,
+          borderColor: 'rgb(75, 192, 192)',
+          tension: 0.1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    // 3) Sorokra kattintás esemény kezelése: adatfrissítés és diagram újrarajzolás :contentReference[oaicite:5]{index=5}
+    tbody.querySelectorAll('tr').forEach(row => {
+      row.addEventListener('click', () => {
+        // kijelölés vizuális visszajelzése
+        tbody.querySelectorAll('tr').forEach(r => r.classList.remove('selected'));
+        row.classList.add('selected');
+
+        // cellákból számok kigyűjtése
+        const values = Array.from(row.children).map(td => Number(td.textContent));
+
+        // Chart.js adatcseréje
+        chart.data.datasets[0].data = values;
+        chart.update();
+      });
+    });
+  </script>
   <footer>
     <div class="bal"><a href="index.html"><img class="bal" src="GAMF-white.png" alt="white"></a></div>
     <div class="jobb"><p>&copy;&nbsp;Készítette: Nagy Kristóf (S1LGWD), Péva Dániel (L40OXI)</p></div>
   </footer>
-  <script>
-    let table = document.getElementById('numberTable');
-    let chart;
-    // Minden sorhoz eseménykezelő hozzáadása
-    for(let i = 0; i < table.tBodies[0].rows.length; i++) {
-      table.tBodies[0].rows[i].addEventListener('click', function() {
-        let rowData = [];
-        for(let j = 0; j < this.cells.length; j++) {
-          rowData.push(parseInt(this.cells[j].textContent));
-        }
-        renderChart(rowData);
-      });
-    }
-    
-    function renderChart(data) {
-      let ctx = document.getElementById('lineChart').getContext('2d');
-      if(chart) {
-        chart.destroy();
-      }
-      chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: data.map((_, i) => "Oszlop " + (i+1)),
-          datasets: [{
-            label: 'Sor adatai',
-            data: data,
-            borderColor: 'rgba(75,192,192,1)',
-            fill: false
-          }]
-        },
-        options: {}
-      });
-    }
-  </script>
 </body>
 </html>
