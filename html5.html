@@ -37,12 +37,39 @@
   </nav>
   <div id="content">
     <!-- Web Storage -->
-    <section>
+  <section>
       <h2>Web Storage</h2>
-      <button onclick="localStorage.setItem('kulcs', 'érték')">Mentés</button>
-      <button onclick="alert(localStorage.getItem('kulcs'))">Lekérés</button>
-    </section>
+      Kulcs: <input type="text" id="kulcs" placeholder="Kulcs"><br>
+      Érték: <input type="text" id="ertek" placeholder="Érték"><br>
+      <button onclick="mentes()">Mentés</button>
+      <button onclick="lekeres()">Lekérés</button>
+      <script>
+        function mentes() {
+          const key = document.getElementById('kulcs').value.trim();
+          const value = document.getElementById('ertek').value.trim();
+          if (key && value) {
+            localStorage.setItem(key, value);
+            alert("Mentve!");
+          } else {
+            alert("Kérlek adj meg kulcsot és értéket is!");
+          }
+        }
 
+        function lekeres() {
+          const key = document.getElementById('kulcs').value.trim();
+          if (key) {
+            const value = localStorage.getItem(key);
+            if (value !== null) {
+              alert(`Kulcshoz tartozó érték: ${value}`);
+            } else {
+              alert("Nem található ilyen kulcs.");
+            }
+          } else {
+            alert("Adj meg kulcsot a lekéréshez!");
+          }
+        }
+      </script>
+    </section>
     <!-- Web Worker -->
     <section>
       <h2>Web Worker</h2>
